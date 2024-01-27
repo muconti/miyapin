@@ -14,7 +14,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-//go:embed myApi/template
+
 var templateData embed.FS
 
 func generateAPIFile() ([]byte, error) {
