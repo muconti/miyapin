@@ -4,11 +4,10 @@ import (
 	"encoding/base64"
 	"embed"
 	"io"
-	"io/fs"
 	"log"
 	"os"
 	"os/exec"
-	"strings"
+
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
